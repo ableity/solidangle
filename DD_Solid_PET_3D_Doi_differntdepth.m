@@ -24,8 +24,8 @@ clc
 CryNumY=77; CryNumZ=104;
 %CryNumY=78; CryNumZ=104;
 CrySize=[26 4 4]; %晶体尺寸？--------by李蕾
-CryCoorY=-CryNumY*CrySize(2)/2+CrySize(2)/2:CrySize(2):CryNumY*CrySize(2)/2-CrySize(2)/2; % 貌似在计算每个晶体的边界，最边上的除外--------by李蕾
-CryCoorZ=-CryNumZ*CrySize(2)/2+CrySize(2)/2:CrySize(2):CryNumZ*CrySize(2)/2-CrySize(2)/2;
+CryCoorY=-CryNumY*CrySize(2)/2+CrySize(2)/2:CrySize(2):CryNumY*CrySize(2)/2-CrySize(2)/2; % Y轴每个晶体的中心    --------  by李蕾
+CryCoorZ=-CryNumZ*CrySize(2)/2+CrySize(2)/2:CrySize(2):CryNumZ*CrySize(2)/2-CrySize(2)/2; % Z轴每个晶体的中心    --------  by李蕾
 CryNumPerHead=CryNumY*CryNumZ;%晶体总数？--------by李蕾
 
 
@@ -132,31 +132,31 @@ for LORi=1%:CryNumZ
                   
                         OffsetUP=DeepLen(IndDoiUp);  %可能是深度值？    --------  by李蕾
                         OffsetDown=DeepLen(IndDoiDown);
-                      
-                        LORUp=[Dis/2+DeepLen(IndDoiUp) CryCoorY(LORj) CryCoorZ(LORi)]; %LOR坐标，因为由doi所以x轴也有值   上平板LORj，下平板LORi --------  by李蕾
-                        LORDown=[-Dis/2-DeepLen(IndDoiDown) CryCoorY(LORn) CryCoorZ(LORm)];% center point
                         
-                        LORUpLD=[Dis/2+DeepLen(IndDoiUp) CryCoorY(LORj)-CrySize(2)/2+VoxSize/2 CryCoorZ(LORi)-CrySize(2)/2+VoxSize/2];  %LOR晶体边界   --------  by李蕾
-                        LORDownLD=[-Dis/2-DeepLen(IndDoiDown) CryCoorY(LORn)-CrySize(2)/2+VoxSize/2  CryCoorZ(LORm)-CrySize(2)/2+VoxSize/2];% zuo xia jiao
+                        LORUp=[Dis/2+DeepLen(IndDoiUp) CryCoorY(LORj) CryCoorZ(LORi)]; %LOR的上坐标（晶体中心），因为由doi所以x轴也有值  --------  by李蕾
+                        LORDown=[-Dis/2-DeepLen(IndDoiDown) CryCoorY(LORn) CryCoorZ(LORm)];% center point LOR 的下左边   --------  by李蕾
+                        
+                        LORUpLD=[Dis/2+DeepLen(IndDoiUp) CryCoorY(LORj)-CrySize(2)/2+VoxSize/2 CryCoorZ(LORi)-CrySize(2)/2+VoxSize/2];  %LOR晶体边界 但是加上了voxsize/2，可能是错的（孟师姐说的）    --------  by李蕾
+                        LORDownLD=[-Dis/2-DeepLen(IndDoiDown) CryCoorY(LORn)-CrySize(2)/2+VoxSize/2  CryCoorZ(LORm)-CrySize(2)/2+VoxSize/2];% zuo xia jiao 
                         
                         kx=LORDown(1)-LORUp(1); ky=LORDown(2)-LORUp(2);kz=LORDown(3)-LORUp(3);
-                        vecLOR=[kx ky kz];
+                        vecLOR=[kx ky kz]; % LOR向量    --------  by李蕾
                         vecY=[0 1 0];
                         vecZ=[0 0 1];
                         
-                        lenLOR=sqrt(kx^2+ky^2+kz^2);
+                        lenLOR=sqrt(kx^2+ky^2+kz^2); %LOR长度    --------  by李蕾
                         
-                        angleY=acos(abs(ky)/lenLOR);
-                        angleZ=acos(abs(kz)/lenLOR);
+                        angleY=acos(abs(ky)/lenLOR);  %LOR与Y轴夹角
+                        angleZ=acos(abs(kz)/lenLOR);  %LOR与Z轴夹角
                         
-                        AttenLenUp=OffsetUP/(cos(atan(Dis/lenLOR)));
+                        AttenLenUp=OffsetUP/(cos(atan(Dis/lenLOR)));%  这个在算什么？如果是晶体内部的衰减距离，那atan应该是acos  --------  by李蕾
                         AttenLenDown=OffsetDown/(cos(atan(Dis/lenLOR)));
                         
                         AttenWeighUp=exp(-u_LYSO*AttenLenUp);% transform in the line
                         AttenWeighDown=exp(-u_LYSO*AttenLenDown);%transform in the line
                         
                         sliceEff=1;
-                        if ky==0&&kz==0%
+                        if ky==0&&kz==0% 最角落的点  --------  by李蕾
                             
                             IndexY=ceil((LORUp(2)-(CryCoorY(1)-CrySize(2)/2))/CrySize(2));%the index of crystal
                             IndexZ=ceil((LORUp(3)-(CryCoorZ(1)-CrySize(3)/2))/CrySize(3));
