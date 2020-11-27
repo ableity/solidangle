@@ -39,7 +39,7 @@ VoxNumY=308; VoxNumZ=416;%四倍的晶体尺寸--------  by李蕾
 VoxNumYZ=VoxNumY*VoxNumZ;%yz平面平行于平板的平面
 
 VoxSize=1;%mm
-VoxCoorX=-VoxNumX*VoxSize/2+VoxSize/2:VoxSize:VoxNumX*VoxSize/2-VoxSize/2;%计算体素边界   --------  by李蕾
+VoxCoorX=-VoxNumX*VoxSize/2+VoxSize/2:VoxSize:VoxNumX*VoxSize/2-VoxSize/2;%计算体素中心   --------  by李蕾
 VoxCoorY=-VoxNumY*VoxSize/2 +VoxSize/2:VoxSize:VoxNumY*VoxSize/2-VoxSize/2;
 VoxCoorZ=-VoxNumZ*VoxSize/2+VoxSize/2:VoxSize:VoxNumZ*VoxSize/2-VoxSize/2;
 
@@ -58,7 +58,7 @@ fod_weightValue = fopen(weightValueSaveName,'wb');
 
 %% load MC simulation data 
 %MC矩阵用来算doi   --------  by李蕾
-load('./extract_depth_information/nonzero_ratio.mat');
+load('./nonzero_ratio.mat');
 nonzero_ratio=nonzero_ratio(13,:);
 % Solid=zeros(1,VoxNum);
 eps=10^-8;
@@ -133,7 +133,7 @@ for LORi=1%:CryNumZ
                         OffsetUP=DeepLen(IndDoiUp);  %可能是深度值？    --------  by李蕾
                         OffsetDown=DeepLen(IndDoiDown);
                         
-                        LORUp=[Dis/2+DeepLen(IndDoiUp) CryCoorY(LORj) CryCoorZ(LORi)]; %LOR的上坐标（晶体中心），因为由doi所以x轴也有值  --------  by李蕾
+                        LORUp=[Dis/2+DeepLen(IndDoiUp) CryCoorY(LORj) CryCoorZ(LORi)]; %LOR的上坐标（晶体中心），因为由doi所以x轴也有值，上平板的晶体是固定（1，1）的  --------  by李蕾
                         LORDown=[-Dis/2-DeepLen(IndDoiDown) CryCoorY(LORn) CryCoorZ(LORm)];% center point LOR 的下左边   --------  by李蕾
                         
                         LORUpLD=[Dis/2+DeepLen(IndDoiUp) CryCoorY(LORj)-CrySize(2)/2+VoxSize/2 CryCoorZ(LORi)-CrySize(2)/2+VoxSize/2];  %LOR晶体边界 但是加上了voxsize/2，可能是错的（孟师姐说的）    --------  by李蕾
@@ -158,21 +158,21 @@ for LORi=1%:CryNumZ
                         sliceEff=1;
                         if ky==0&&kz==0% 最角落的点  --------  by李蕾
                             
-                            IndexY=ceil((LORUp(2)-(CryCoorY(1)-CrySize(2)/2))/CrySize(2));%the index of crystal
-                            IndexZ=ceil((LORUp(3)-(CryCoorZ(1)-CrySize(3)/2))/CrySize(3));
+                            IndexY=ceil((LORUp(2)-(CryCoorY(1)-CrySize(2)/2))/CrySize(2));%the index of crystal  (-152-(-152-4/2))/4 = 1 ceil向上取整
+                            IndexZ=ceil((LORUp(3)-(CryCoorZ(1)-CrySize(3)/2))/CrySize(3));%1
                             
-                            IndexVoxY=(IndexY-1)*VoxNumPerCry+50+1;
-                            IndexVoxZ=(IndexZ-1)*VoxNumPerCry+50+1;
+                            IndexVoxY=(IndexY-1)*VoxNumPerCry+50+1;%51 为啥加50？可能是视野范围小一点   这个值应该是最下面一层的第一个体素 --------  by李蕾
+                            IndexVoxZ=(IndexZ-1)*VoxNumPerCry+50+1;%51
                             
                             for tmpXi=1:VoxNumX
                                 
-                                IndexTemp= tmpXi+(IndexVoxY-1)*VoxNumX+ (IndexVoxZ-1)*VoxNumY*VoxNumX;
+                                IndexTemp= tmpXi+(IndexVoxY-1)*VoxNumX+ (IndexVoxZ-1)*VoxNumY*VoxNumX; %先x再y再z  算每个晶体对应的16个体素中的第一个体素的编号   --------  by李蕾
                                 
                                 for Voxi=1:VoxNumPerCry%Z
                                     for Voxj=1:VoxNumPerCry%Y
-                                        Index=IndexTemp+(Voxj-1)*VoxNumX+(Voxi-1)*VoxNumY*VoxNumX;
+                                        Index=IndexTemp+(Voxj-1)*VoxNumX+(Voxi-1)*VoxNumY*VoxNumX;%P的序号， 根据indexTemp每个体素对应的最终编号
                                         
-                                        point=[VoxCoorX(tmpXi)  VoxCoorY(IndexVoxY+Voxj-1)  VoxCoorZ(IndexVoxZ+Voxi-1)];
+                                        point=[VoxCoorX(tmpXi)  VoxCoorY(IndexVoxY+Voxj-1)  VoxCoorZ(IndexVoxZ+Voxi-1)];%   当前遍历的体素坐标
                                         centerPoint= findCen(point,LORUp,kx,ky,kz,CrySize,VoxSize,Dis,OffsetUP);
                                         
                                         theta= SolidAngle3D5(centerPoint,LORUp,kx,ky,kz,CrySize,angleY, angleZ, Dis,lenLOR,OffsetUP);

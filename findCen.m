@@ -1,7 +1,16 @@
 function centerPoint= findCen(point,LORUp,kx,ky,kz,CrySize,VoxSize,Dis,OffsetUP)
+% point 当前遍历的体素的坐标
+% LORUp 晶体坐标，有DOI所以x轴上也有值
+% kx，ky，kz LOR向量的三个坐标
+% crysize 晶体尺寸（26，4，4）
+% voxsize 体素尺寸（1）
+% dis 两个板之间的距离，
+% offsetUP 0
+
+
 centerPoint=point;
 
-YSide=[LORUp(2)+CrySize(2)/2 LORUp(2)-CrySize(2)/2];
+YSide=[LORUp(2)+CrySize(2)/2 LORUp(2)-CrySize(2)/2]; %晶体的YZ边界   ------- by 李蕾
 ZSide=[LORUp(3)+CrySize(3)/2 LORUp(3)-CrySize(3)/2];
 
 
